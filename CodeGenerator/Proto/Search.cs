@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace SilentOrbit.ProtocolBuffers
 {
@@ -20,10 +22,21 @@ namespace SilentOrbit.ProtocolBuffers
                 if (pt != null)
                     return pt;
 
-                //Search siblings
-                pt = SearchSubMessages(msg.Parent, msg.Package + "." + path);
-                if (pt != null)
-                    return pt;
+                //Search siblings, including higher up in the package namespaces
+
+                var packageParts = msg.Package.Split('.');
+                var packages = new List<String>();
+                for (int i = packageParts.Length; i >= 1 ; --i)
+                {
+                    packages.Add(packageParts.Take(i).Aggregate((p1, p2) => p1 + "." + p2));
+                }
+
+                foreach (var package in packages)
+                {
+                    pt = SearchSubMessages(msg.Parent, package + "." + path);
+                    if (pt != null)
+                        return pt;
+                }
 
                 msg = msg.Parent;
             }
