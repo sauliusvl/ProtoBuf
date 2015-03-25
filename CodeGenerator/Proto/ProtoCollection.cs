@@ -28,7 +28,7 @@ namespace SilentOrbit.ProtocolBuffers
         {
             foreach (var m in proto.Messages.Values)
             {
-                Messages.Add(m.ProtoName, m);
+                Messages.Add(m.FullProtoName, m);
                 m.Parent = this;
             }
             foreach (var e in proto.Enums.Values)

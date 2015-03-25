@@ -135,7 +135,7 @@ namespace SilentOrbit.ProtocolBuffers
                 throw new ProtoFormatException(e.Message, e, tr);
             }
 
-            parent.Messages.Add(msg.ProtoName, msg);
+            parent.Messages.Add(msg.FullProtoName, msg);
         }
 
         static void ParseExtend(TokenReader tr, ProtoMessage parent, string package)
