@@ -22,11 +22,26 @@ namespace SilentOrbit.ProtocolBuffers
                 if (pt != null)
                     return pt;
 
+                var packages = new List<String>();
+
+                packages.Add(msg.Package);
+                
+                // Search among included files
+
+                var parentCollection = msg.Parent;
+                while (parentCollection is ProtoCollection == false)
+                    parentCollection = parentCollection.Parent;
+
+                var includedMessages = parentCollection.Messages.Values.Where(m => msg.IncludedFiles.Contains(m.DefinitionFile));
+                var includedPackages = includedMessages.Select(m => m.Package).Distinct();
+
+                packages.AddRange(includedPackages);
+
                 //Search siblings, including higher up in the package namespaces
 
                 var packageParts = msg.Package.Split('.');
-                var packages = new List<String>();
-                for (int i = packageParts.Length; i >= 1 ; --i)
+                
+                for (int i = packageParts.Length - 1; i >= 1 ; --i)
                 {
                     packages.Add(packageParts.Take(i).Aggregate((p1, p2) => p1 + "." + p2));
                 }

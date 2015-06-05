@@ -38,8 +38,8 @@ namespace SilentOrbit.ProtocolBuffers
             }
         }
 
-        public ProtoMessage(ProtoMessage parent, string package)
-            : base(parent, package)
+        public ProtoMessage(ProtoMessage parent, string package, string definitionFile, IList<string> includedFiles)
+            : base(parent, package, definitionFile, includedFiles)
         {
             this.OptionType = "class";
         }

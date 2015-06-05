@@ -66,6 +66,8 @@ namespace SilentOrbit.ProtocolBuffers
         static void ParseMessages(TokenReader tr, ProtoCollection p)
         {
             string package = "Example";
+            var currentFolder = new FileInfo(tr.Path).Directory.FullName;
+            var includedFiles = new List<string>();
 
             while (true)
             {
@@ -81,17 +83,19 @@ namespace SilentOrbit.ProtocolBuffers
                             lastComment.Clear();
                             continue;
                         case "message":
-                            ParseMessage(tr, p, package);
+                            ParseMessage(tr, p, package, includedFiles);
                             break;
                         case "enum":
-                            ParseEnum(tr, p, package);
+                            ParseEnum(tr, p, package, includedFiles);
                             break;
                         case "option":
                             //Save options
                             ParseOption(tr, p);
                             break;
                         case "import": //Ignored
-                            tr.ReadNext();
+                            var file = tr.ReadNext();
+                            var f = new FileInfo(Path.Combine(currentFolder, file));
+                            includedFiles.Add(f.FullName);
                             tr.ReadNextOrThrow(";");
                             break;
                         case "package":
@@ -104,7 +108,7 @@ namespace SilentOrbit.ProtocolBuffers
                             tr.ReadNextOrThrow(";");
                             break;
                         case "extend":
-                            ParseExtend(tr, p, package);
+                            ParseExtend(tr, p, package, includedFiles);
                             break;
                         default:
                             throw new ProtoFormatException("Unexpected/not implemented: " + token, tr);
@@ -117,9 +121,9 @@ namespace SilentOrbit.ProtocolBuffers
             }
         }
 
-        static void ParseMessage(TokenReader tr, ProtoMessage parent, string package)
+        static void ParseMessage(TokenReader tr, ProtoMessage parent, string package, IList<string> includedFiles)
         {
-            var msg = new ProtoMessage(parent, package);
+            var msg = new ProtoMessage(parent, package, tr.Path, includedFiles);
             LocalParser.ParseComments(msg, lastComment, tr);
             msg.ProtoName = tr.ReadNext();
 
@@ -127,7 +131,7 @@ namespace SilentOrbit.ProtocolBuffers
 
             try
             {
-                while (ParseField(tr, msg))
+                while (ParseField(tr, msg, includedFiles))
                     continue;
             }
             catch (Exception e)
@@ -138,9 +142,9 @@ namespace SilentOrbit.ProtocolBuffers
             parent.Messages.Add(msg.FullProtoName, msg);
         }
 
-        static void ParseExtend(TokenReader tr, ProtoMessage parent, string package)
+        static void ParseExtend(TokenReader tr, ProtoMessage parent, string package, IList<string> includedFiles)
         {
-            var msg = new ProtoMessage(parent, package);
+            var msg = new ProtoMessage(parent, package, tr.Path, includedFiles);
             LocalParser.ParseComments(msg, lastComment, tr);
             msg.ProtoName = tr.ReadNext();
 
@@ -148,7 +152,7 @@ namespace SilentOrbit.ProtocolBuffers
 
             try
             {
-                while (ParseField(tr, msg))
+                while (ParseField(tr, msg, includedFiles))
                     continue;
             }
             catch (Exception e)
@@ -160,7 +164,7 @@ namespace SilentOrbit.ProtocolBuffers
             //parent.Messages.Add(msg.ProtoName, msg);
         }
 
-        static bool ParseField(TokenReader tr, ProtoMessage m)
+        static bool ParseField(TokenReader tr, ProtoMessage m, IList<string> includedFiles)
         {
             string rule = tr.ReadNextComment();
             while (true)
@@ -195,10 +199,10 @@ namespace SilentOrbit.ProtocolBuffers
                     ParseOption(tr, m);
                     return true;
                 case "message":
-                    ParseMessage(tr, m, m.Package + "." + m.ProtoName);
+                    ParseMessage(tr, m, m.Package + "." + m.ProtoName, includedFiles);
                     return true;
                 case "enum":
-                    ParseEnum(tr, m, m.Package + "." + m.ProtoName);
+                    ParseEnum(tr, m, m.Package + "." + m.ProtoName, includedFiles);
                     return true;
                 case "extensions":
                     ParseExtensions(tr, m);
@@ -308,9 +312,9 @@ namespace SilentOrbit.ProtocolBuffers
             }
         }
 
-        static void ParseEnum(TokenReader tr, ProtoMessage parent, string package)
+        static void ParseEnum(TokenReader tr, ProtoMessage parent, string package, IList<string> includedFiles)
         {
-            ProtoEnum me = new ProtoEnum(parent, package);
+            ProtoEnum me = new ProtoEnum(parent, package, tr.Path, includedFiles);
 
             LocalParser.ParseComments(me, lastComment, tr);
             me.ProtoName = tr.ReadNext();

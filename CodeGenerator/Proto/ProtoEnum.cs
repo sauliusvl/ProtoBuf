@@ -14,8 +14,8 @@ namespace SilentOrbit.ProtocolBuffers
 
         public List<ProtoEnumValue> Enums = new List<ProtoEnumValue>();
 
-        public ProtoEnum(ProtoMessage parent, string package)
-            : base(parent, package)
+        public ProtoEnum(ProtoMessage parent, string package, string definitionFile, IList<string> includedFiles)
+            : base(parent, package, definitionFile, includedFiles)
         {
         }
     }

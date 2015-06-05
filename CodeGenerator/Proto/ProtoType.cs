@@ -1,4 +1,6 @@
 using System;
+using System.Collections;
+using System.Collections.Generic;
 
 namespace SilentOrbit.ProtocolBuffers
 {
@@ -65,6 +67,11 @@ namespace SilentOrbit.ProtocolBuffers
         /// .proto package option
         /// </summary>
         public string Package { get; set; }
+
+        public string DefinitionFile { get; set; }
+
+        public IList<string> IncludedFiles { get; set; }
+
         #region Local options
         public string OptionNamespace { get; set; }
 
@@ -103,7 +110,7 @@ namespace SilentOrbit.ProtocolBuffers
         /// <summary>
         /// Used by types within a namespace
         /// </summary>
-        public ProtoType(ProtoMessage parent, string package)
+        public ProtoType(ProtoMessage parent, string package, string definitionFile, IList<string> includedFiles)
             : this()
         {
             if (this is ProtoCollection == false)
@@ -115,6 +122,8 @@ namespace SilentOrbit.ProtocolBuffers
             }
             this.Parent = parent;
             this.Package = package;
+            this.DefinitionFile = definitionFile;
+            this.IncludedFiles = includedFiles;
         }
 
         public ProtoType()
@@ -125,6 +134,7 @@ namespace SilentOrbit.ProtocolBuffers
             this.OptionPreserveUnknown = false;
             this.OptionExternal = false;
             this.OptionType = null;
+            this.IncludedFiles = new List<string>();
         }
 
         public bool Nullable
