@@ -33,7 +33,7 @@ namespace SilentOrbit.ProtocolBuffers
             }
             foreach (var e in proto.Enums.Values)
             {
-                Enums.Add(e.ProtoName, e);
+                Enums.Add(e.FullProtoName, e);
                 e.Parent = this;
             }
         }
